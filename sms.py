@@ -2,87 +2,112 @@ from tkinter import *
 import time
 
 import pymysql
+import pandas
 import ttkthemes
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox,filedialog
 
 
 # Functional section
 
-def update():
-    id= ''
-    def updateQuery():
-        print(
-            "name " + nameEntry.get() + " mobile " + mobileEntry.get() + " email " + emailEntry.get() + " address " + addressEntry.get() + " gender " + genderEntry.get() + " dob " + dobEntry.get())
+def export():
+    url=filedialog.asksaveasfilename(defaultextension='.csv')
+    indexing=studentTable.get_children()
+    newList=[]
+    for index in indexing:
+        content=studentTable.item(index)
+        dataList=content['values']
+        newList.append(dataList)
 
-        if (
-                nameEntry.get() == "" or mobileEntry.get() == "" or emailEntry.get() == "" or addressEntry.get() == "" or genderEntry.get() == ""):
-            messagebox.showerror("Error", "All fields should be fill", parent=updateStudentWindow)
-        else:
-            query = "UPDATE `student` SET `name` = %s , mobile_no = %s , email = %s , address = %s , gender = %s , dob = %s WHERE `student`.`id` = %s;"
+    table=pandas.DataFrame(newList,columns=["Id","Name","Mobile","Email","Address","Gender","DOB","Created Date","Created At"])
+    table.to_csv(url,index=False)
+    messagebox.showinfo('Success',"Data export is success")
 
-            myCursor.execute(query, (nameEntry.get(), mobileEntry.get(), emailEntry.get(),
-                                     addressEntry.get(), genderEntry.get(), dobEntry.get(),id))
-            con.commit()
-            messagebox.showinfo("Confirm", "Data update successfully.")
-            updateStudentWindow.destroy()
-            show()
+def exit():
+    result=messagebox.askyesno("Exit","Do you want to exit?")
+    if result:
+        root.destroy()
 
-    updateStudentWindow = Toplevel()
-    updateStudentWindow.grab_set()
-    updateStudentWindow.resizable(0, 0)
-    updateStudentWindow.geometry("400x400+100+100")
+def topLevelWindow(title,buttonText,command):
+    global idEntry,nameEntry,mobileEntry,emailEntry,addressEntry,genderEntry,dobEntry,topLevelScreen,id
+    topLevelScreen = Toplevel()
+    topLevelScreen.title(title)
+    topLevelScreen.grab_set()
+    topLevelScreen.resizable(0, 0)
+    topLevelScreen.geometry("400x400+100+100")
 
-    idLabel = Label(updateStudentWindow, text="ID", font=('arial', '15', 'bold'))
-    idLabel.grid(row=0, column=0, padx=10, pady=10)
-    idEntry = Entry(updateStudentWindow, font=('arial', '15', 'bold'))
-    idEntry.grid(row=0, column=1, padx=10, pady=10)
+    if (buttonText != "Add"):
+        idLabel = Label(topLevelScreen, text="ID", font=('arial', '15', 'bold'))
+        idLabel.grid(row=0, column=0, padx=10, pady=10)
+        idEntry = Entry(topLevelScreen, font=('arial', '15', 'bold'))
+        idEntry.grid(row=0, column=1, padx=10, pady=10)
+    else:
+        pass
 
-    nameLabel = Label(updateStudentWindow, text="Name", font=('arial', '15', 'bold'))
+    nameLabel = Label(topLevelScreen, text="Name", font=('arial', '15', 'bold'))
     nameLabel.grid(row=1, column=0, padx=10, pady=10)
-    nameEntry = Entry(updateStudentWindow, font=('arial', '15', 'bold'))
+    nameEntry = Entry(topLevelScreen, font=('arial', '15', 'bold'))
     nameEntry.grid(row=1, column=1, padx=10, pady=10)
 
-    mobileLabel = Label(updateStudentWindow, text="Mobile No", font=('arial', '15', 'bold'))
+    mobileLabel = Label(topLevelScreen, text="Mobile No", font=('arial', '15', 'bold'))
     mobileLabel.grid(row=2, column=0, padx=10, pady=10)
-    mobileEntry = Entry(updateStudentWindow, font=('arial', '15', 'bold'))
+    mobileEntry = Entry(topLevelScreen, font=('arial', '15', 'bold'))
     mobileEntry.grid(row=2, column=1, padx=10, pady=10)
 
-    emailLabel = Label(updateStudentWindow, text="Email", font=('arial', '15', 'bold'))
+    emailLabel = Label(topLevelScreen, text="Email", font=('arial', '15', 'bold'))
     emailLabel.grid(row=3, column=0, padx=10, pady=10)
-    emailEntry = Entry(updateStudentWindow, font=('arial', '15', 'bold'))
+    emailEntry = Entry(topLevelScreen, font=('arial', '15', 'bold'))
     emailEntry.grid(row=3, column=1, padx=10, pady=10)
 
-    addressLabel = Label(updateStudentWindow, text="Address", font=('arial', '15', 'bold'))
+    addressLabel = Label(topLevelScreen, text="Address", font=('arial', '15', 'bold'))
     addressLabel.grid(row=4, column=0, padx=10, pady=10)
-    addressEntry = Entry(updateStudentWindow, font=('arial', '15', 'bold'))
+    addressEntry = Entry(topLevelScreen, font=('arial', '15', 'bold'))
     addressEntry.grid(row=4, column=1, padx=10, pady=10)
 
-    genderLabel = Label(updateStudentWindow, text="Gender", font=('arial', '15', 'bold'))
+    genderLabel = Label(topLevelScreen, text="Gender", font=('arial', '15', 'bold'))
     genderLabel.grid(row=5, column=0, padx=10, pady=10)
-    genderEntry = Entry(updateStudentWindow, font=('arial', '15', 'bold'))
+    genderEntry = Entry(topLevelScreen, font=('arial', '15', 'bold'))
     genderEntry.grid(row=5, column=1, padx=10, pady=10)
 
-    dobLabel = Label(updateStudentWindow, text="Date of Birth", font=('arial', '15', 'bold'))
+    dobLabel = Label(topLevelScreen, text="Date of Birth", font=('arial', '15', 'bold'))
     dobLabel.grid(row=6, column=0, padx=10, pady=10)
-    dobEntry = Entry(updateStudentWindow, font=('arial', '15', 'bold'))
+    dobEntry = Entry(topLevelScreen, font=('arial', '15', 'bold'))
     dobEntry.grid(row=6, column=1, padx=10, pady=10)
 
-    addStudentButton = ttk.Button(updateStudentWindow, text='Update',command=updateQuery)
+    addStudentButton = ttk.Button(topLevelScreen, text=buttonText, command=command)
     addStudentButton.grid(row=7, columnspan=2, padx=10, pady=10)
 
-    indexing=studentTable.focus()
-    content=studentTable.item(indexing)
-    listData=content['values']
-    print(listData)
-    id=listData[0]
-    idEntry.insert(0,listData[0])
-    nameEntry.insert(0,listData[1])
-    mobileEntry.insert(0,listData[2])
-    emailEntry.insert(0,listData[3])
-    addressEntry.insert(0,listData[4])
-    genderEntry.insert(0,listData[5])
-    dobEntry.insert(0,listData[6])
+    if(buttonText=="Update"):
+        indexing = studentTable.focus()
+        content = studentTable.item(indexing)
+        listData = content['values']
+        print(listData)
+        id = listData[0]
+        idEntry.insert(0, listData[0])
+        nameEntry.insert(0, listData[1])
+        mobileEntry.insert(0, listData[2])
+        emailEntry.insert(0, listData[3])
+        addressEntry.insert(0, listData[4])
+        genderEntry.insert(0, listData[5])
+        dobEntry.insert(0, listData[6])
+    else:
+        pass
 
+def update():
+    print(
+        "name " + nameEntry.get() + " mobile " + mobileEntry.get() + " email " + emailEntry.get() + " address " + addressEntry.get() + " gender " + genderEntry.get() + " dob " + dobEntry.get())
+
+    if (
+            nameEntry.get() == "" or mobileEntry.get() == "" or emailEntry.get() == "" or addressEntry.get() == "" or genderEntry.get() == ""):
+        messagebox.showerror("Error", "All fields should be fill", parent=topLevelScreen)
+    else:
+        query = "UPDATE `student` SET `name` = %s , mobile_no = %s , email = %s , address = %s , gender = %s , dob = %s WHERE `student`.`id` = %s;"
+
+        myCursor.execute(query, (nameEntry.get(), mobileEntry.get(), emailEntry.get(),
+                                 addressEntry.get(), genderEntry.get(), dobEntry.get(),id))
+        con.commit()
+        messagebox.showinfo("Confirm", "Data update successfully.")
+        topLevelScreen.destroy()
+        show()
 
 def show():
     query = "select * from student"
@@ -93,124 +118,41 @@ def show():
         dataList = list(data)
         studentTable.insert('', END, values=dataList)
 
-def addStudent():
-    def add():
-        print(
-            "name " + nameEntry.get() + " mobile " + mobileEntry.get() + " email " + emailEntry.get() + " address " + addressEntry.get() + " gender " + genderEntry.get() + " dob " + dobEntry.get())
+def add():
+    print(
+        "name " + nameEntry.get() + " mobile " + mobileEntry.get() + " email " + emailEntry.get() + " address " + addressEntry.get() + " gender " + genderEntry.get() + " dob " + dobEntry.get())
 
-        if (
-                nameEntry.get() == "" or mobileEntry.get() == "" or emailEntry.get() == "" or addressEntry.get() == "" or genderEntry.get() == ""):
-            messagebox.showerror("Error", "All fields should be fill", parent=addStudentWindow)
+    if (
+            nameEntry.get() == "" or mobileEntry.get() == "" or emailEntry.get() == "" or addressEntry.get() == "" or genderEntry.get() == ""):
+        messagebox.showerror("Error", "All fields should be fill", parent=topLevelWindow())
+    else:
+        query = "INSERT INTO `student`( `name`, `mobile_no`, `email`, `address`, `gender`, `dob`, `added_date`, `added_time`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+        date = time.strftime("%d/%m/%Y")
+        currentTime = time.strftime("%H:%M:%S")
+        myCursor.execute(query, (nameEntry.get(), mobileEntry.get(), emailEntry.get(),
+                                 addressEntry.get(), genderEntry.get(), dobEntry.get(), date, currentTime))
+        con.commit()
+        result = messagebox.askyesno("Confirm", "Data added successfully. Do you want to clear this form?")
+        if result:
+            nameEntry.delete(0, END)
+            mobileEntry.delete(0, END)
+            emailEntry.delete(0, END)
+            addressEntry.delete(0, END)
+            genderEntry.delete(0, END)
+            dobEntry.delete(0, END)
         else:
-            query = "INSERT INTO `student`( `name`, `mobile_no`, `email`, `address`, `gender`, `dob`, `added_date`, `added_time`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-            date = time.strftime("%d/%m/%Y")
-            currentTime = time.strftime("%H:%M:%S")
-            myCursor.execute(query, (nameEntry.get(), mobileEntry.get(), emailEntry.get(),
-                                     addressEntry.get(), genderEntry.get(), dobEntry.get(), date, currentTime))
-            con.commit()
-            result = messagebox.askyesno("Confirm", "Data added successfully. Do you want to clear this form?")
-            if result:
-                nameEntry.delete(0, END)
-                mobileEntry.delete(0, END)
-                emailEntry.delete(0, END)
-                addressEntry.delete(0, END)
-                genderEntry.delete(0, END)
-                dobEntry.delete(0, END)
-            else:
-                pass
+            pass
 
-            show()
+        show()
 
-    addStudentWindow = Toplevel()
-    addStudentWindow.grab_set()
-    addStudentWindow.resizable(0, 0)
-    addStudentWindow.geometry("400x400+100+100")
-
-    nameLabel = Label(addStudentWindow, text="Name", font=('arial', '15', 'bold'))
-    nameLabel.grid(row=0, column=0, padx=10, pady=10)
-    nameEntry = Entry(addStudentWindow, font=('arial', '15', 'bold'))
-    nameEntry.grid(row=0, column=1, padx=10, pady=10)
-
-    mobileLabel = Label(addStudentWindow, text="Mobile No", font=('arial', '15', 'bold'))
-    mobileLabel.grid(row=1, column=0, padx=10, pady=10)
-    mobileEntry = Entry(addStudentWindow, font=('arial', '15', 'bold'))
-    mobileEntry.grid(row=1, column=1, padx=10, pady=10)
-
-    emailLabel = Label(addStudentWindow, text="Email", font=('arial', '15', 'bold'))
-    emailLabel.grid(row=2, column=0, padx=10, pady=10)
-    emailEntry = Entry(addStudentWindow, font=('arial', '15', 'bold'))
-    emailEntry.grid(row=2, column=1, padx=10, pady=10)
-
-    addressLabel = Label(addStudentWindow, text="Address", font=('arial', '15', 'bold'))
-    addressLabel.grid(row=3, column=0, padx=10, pady=10)
-    addressEntry = Entry(addStudentWindow, font=('arial', '15', 'bold'))
-    addressEntry.grid(row=3, column=1, padx=10, pady=10)
-
-    genderLabel = Label(addStudentWindow, text="Gender", font=('arial', '15', 'bold'))
-    genderLabel.grid(row=4, column=0, padx=10, pady=10)
-    genderEntry = Entry(addStudentWindow, font=('arial', '15', 'bold'))
-    genderEntry.grid(row=4, column=1, padx=10, pady=10)
-
-    dobLabel = Label(addStudentWindow, text="Date of Birth", font=('arial', '15', 'bold'))
-    dobLabel.grid(row=5, column=0, padx=10, pady=10)
-    dobEntry = Entry(addStudentWindow, font=('arial', '15', 'bold'))
-    dobEntry.grid(row=5, column=1, padx=10, pady=10)
-
-    addStudentButton = ttk.Button(addStudentWindow, text='Add Student', command=add)
-    addStudentButton.grid(row=6, columnspan=2, padx=10, pady=10)
-
-def searchStudent():
-    def search():
-        query = "select * from student where id=%s or name=%s or mobile_no=%s or email=%s or address=%s or gender=%s or dob=%s"
-        myCursor.execute(query, (idEntry.get(),nameEntry.get(),mobileEntry.get(),emailEntry.get(),addressEntry.get(),genderEntry.get(),dobEntry.get()))
-        fetchedData = myCursor.fetchall()
-        studentTable.delete(*studentTable.get_children())
-        for data in fetchedData:
-            dataList = list(data)
-            studentTable.insert('', END, values=dataList)
-
-    searchStudentWindow = Toplevel()
-    searchStudentWindow.grab_set()
-    searchStudentWindow.resizable(0, 0)
-    searchStudentWindow.geometry("400x400+100+100")
-
-    idLabel = Label(searchStudentWindow, text="ID", font=('arial', '15', 'bold'))
-    idLabel.grid(row=0, column=0, padx=10, pady=10)
-    idEntry = Entry(searchStudentWindow, font=('arial', '15', 'bold'))
-    idEntry.grid(row=0, column=1, padx=10, pady=10)
-
-    nameLabel = Label(searchStudentWindow, text="Name", font=('arial', '15', 'bold'))
-    nameLabel.grid(row=1, column=0, padx=10, pady=10)
-    nameEntry = Entry(searchStudentWindow, font=('arial', '15', 'bold'))
-    nameEntry.grid(row=1, column=1, padx=10, pady=10)
-
-    mobileLabel = Label(searchStudentWindow, text="Mobile No", font=('arial', '15', 'bold'))
-    mobileLabel.grid(row=2, column=0, padx=10, pady=10)
-    mobileEntry = Entry(searchStudentWindow, font=('arial', '15', 'bold'))
-    mobileEntry.grid(row=2, column=1, padx=10, pady=10)
-
-    emailLabel = Label(searchStudentWindow, text="Email", font=('arial', '15', 'bold'))
-    emailLabel.grid(row=3, column=0, padx=10, pady=10)
-    emailEntry = Entry(searchStudentWindow, font=('arial', '15', 'bold'))
-    emailEntry.grid(row=3, column=1, padx=10, pady=10)
-
-    addressLabel = Label(searchStudentWindow, text="Address", font=('arial', '15', 'bold'))
-    addressLabel.grid(row=4, column=0, padx=10, pady=10)
-    addressEntry = Entry(searchStudentWindow, font=('arial', '15', 'bold'))
-    addressEntry.grid(row=4, column=1, padx=10, pady=10)
-
-    genderLabel = Label(searchStudentWindow, text="Gender", font=('arial', '15', 'bold'))
-    genderLabel.grid(row=5, column=0, padx=10, pady=10)
-    genderEntry = Entry(searchStudentWindow, font=('arial', '15', 'bold'))
-    genderEntry.grid(row=5, column=1, padx=10, pady=10)
-
-    dobLabel = Label(searchStudentWindow, text="Date of Birth", font=('arial', '15', 'bold'))
-    dobLabel.grid(row=6, column=0, padx=10, pady=10)
-    dobEntry = Entry(searchStudentWindow, font=('arial', '15', 'bold'))
-    dobEntry.grid(row=6, column=1, padx=10, pady=10)
-
-    addStudentButton = ttk.Button(searchStudentWindow, text='Search Student', command=search)
-    addStudentButton.grid(row=7, columnspan=2, padx=10, pady=10)
+def search():
+    query = "select * from student where id=%s or name=%s or mobile_no=%s or email=%s or address=%s or gender=%s or dob=%s"
+    myCursor.execute(query, (idEntry.get(),nameEntry.get(),mobileEntry.get(),emailEntry.get(),addressEntry.get(),genderEntry.get(),dobEntry.get()))
+    fetchedData = myCursor.fetchall()
+    studentTable.delete(*studentTable.get_children())
+    for data in fetchedData:
+        dataList = list(data)
+        studentTable.insert('', END, values=dataList)
 
 def delete():
     indexing=studentTable.focus()
@@ -226,8 +168,8 @@ def connect_db():
         global myCursor, con
         try:
             # for DEV purpose
-            con = pymysql.connect(host="localhost", user="root", password="")
-            # con=pymysql.connect(host=hostNameEntry.get(),user=usernameEntry.get(),password=passwordEntry.get())
+            # con = pymysql.connect(host="localhost", user="root", password="")
+            con=pymysql.connect(host=hostNameEntry.get(),user=usernameEntry.get(),password=passwordEntry.get())
             myCursor = con.cursor()
             messagebox.showinfo('success', 'Database connection is success', parent=connectWindow)
             connectWindow.destroy()
@@ -336,25 +278,25 @@ logoImage = PhotoImage(file="logo.png")
 logoLabel = Label(leftFrame, image=logoImage)
 logoLabel.grid(row=0, column=0)
 
-addButton = ttk.Button(leftFrame, text="Add Student", padding=5, width=25, state=DISABLED, command=addStudent)
+addButton = ttk.Button(leftFrame, text="Add Student", padding=5, width=25, state=DISABLED, command=lambda :topLevelWindow("Add Student","Add",add))
 addButton.grid(row=1, column=0, pady=20)
 
-searchButton = ttk.Button(leftFrame, text="Search Student", padding=5, width=25, state=DISABLED, command=searchStudent)
+searchButton = ttk.Button(leftFrame, text="Search Student", padding=5, width=25, state=DISABLED, command=lambda :topLevelWindow("Search Student","Search",search))
 searchButton.grid(row=2, column=0, pady=20)
 
 deleteButton = ttk.Button(leftFrame, text="Delete Student", padding=5, width=25, state=DISABLED,command=delete)
 deleteButton.grid(row=3, column=0, pady=20)
 
-updateButton = ttk.Button(leftFrame, text="Update Student", padding=5, width=25, state=DISABLED,command=update)
+updateButton = ttk.Button(leftFrame, text="Update Student", padding=5, width=25, state=DISABLED,command=lambda :topLevelWindow("Update Student","Update",update))
 updateButton.grid(row=4, column=0, pady=20)
 
 showButton = ttk.Button(leftFrame, text="Show Student", padding=5, width=25, state=DISABLED,command=show)
 showButton.grid(row=5, column=0, pady=20)
 
-exportButton = ttk.Button(leftFrame, text="Export Student", padding=5, width=25, state=DISABLED)
+exportButton = ttk.Button(leftFrame, text="Export Student", padding=5, width=25, state=DISABLED,command=export)
 exportButton.grid(row=6, column=0, pady=20)
 
-exitButton = ttk.Button(leftFrame, text="Exit", padding=5, width=25, state=DISABLED)
+exitButton = ttk.Button(leftFrame, text="Exit", padding=5, width=25, state=DISABLED,command=exit)
 exitButton.grid(row=7, column=0, pady=20)
 
 # RIGHT
